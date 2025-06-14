@@ -3,6 +3,7 @@
 #include <esp_matter.h>
 
 #include "sensors/TemperatureSensor.h"
+#include "MatterNode.h"
 #include "MatterSensorBase.h"
 
 using namespace esp_matter;
@@ -17,16 +18,9 @@ class MatterTemperatureSensor : public MatterSensorBase
 {
     public:
 
-        // Constructs a MatterTemperatureSensor instance, associating it with a Matter node
-        // and a physical temperature sensor.
-        // @param node The Matter node to which this sensor's endpoint will be attached.
-        // @param temperatureSensor Pointer to the physical temperature sensor providing measurements.
-        MatterTemperatureSensor(node_t* node, TemperatureSensor* temperatureSensor);
-
-        // Creates and configures a Matter endpoint for the temperature sensor, initializing
-        // the Temperature Measurement cluster (0x0402) and its attributes.
-        // @return Pointer to the created endpoint, or nullptr on failure.
-        endpoint_t* CreateEndpoint() override;
+        static std::shared_ptr<MatterTemperatureSensor> CreateEndpoint(
+            std::shared_ptr<MatterNode> matterNode,
+            std::shared_ptr<TemperatureSensor> temperatureSensor);
 
         // Reads the latest temperature measurement from the physical sensor and updates
         // the Matter Temperature Measurement cluster's MeasuredValue attribute.
@@ -34,7 +28,9 @@ class MatterTemperatureSensor : public MatterSensorBase
 
     private:
 
-        TemperatureSensor* m_temperatureSensor;
+        MatterTemperatureSensor(endpoint_t* endpoint, std::shared_ptr<TemperatureSensor> temperatureSensor);
+
+        std::shared_ptr<TemperatureSensor> m_temperatureSensor;
         std::optional<float> m_temperatureMeasurement;
 
         // Updates the Temperature Measurement cluster's attributes (e.g., MeasuredValue)

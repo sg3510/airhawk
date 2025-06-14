@@ -1,28 +1,6 @@
 #include <cmath>
 #include "MatterSensorBase.h"
 
-void MatterSensorBase::UpdateAttributeValueInt16(uint32_t cluster_id, uint32_t attribute_id, int16_t value)
-{
-    if (!m_endpoint) {
-        ESP_LOGE(m_tag, "Endpoint not initialized.");
-        return;
-    }
-    uint16_t endpoint_id = endpoint::get_id(m_endpoint);
-    esp_matter_attr_val_t val = esp_matter_int16(value);
-    attribute::update(endpoint_id, cluster_id, attribute_id, &val);
-}
-
-void MatterSensorBase::UpdateAttributeValueFloat(uint32_t cluster_id, uint32_t attribute_id, float value)
-{
-    if (!m_endpoint) {
-        ESP_LOGE(m_tag, "Endpoint not initialized.");
-        return;
-    }
-    uint16_t endpoint_id = endpoint::get_id(m_endpoint);
-    esp_matter_attr_val_t val = esp_matter_float(value);
-    attribute::update(endpoint_id, cluster_id, attribute_id, &val);
-}
-
 void MatterSensorBase::UpdateRelativeHumidityMeasurementAttributes(std::optional<float> relativeHumidity)
 {
     if (!relativeHumidity.has_value()) {

@@ -1,19 +1,26 @@
 #pragma once
 
 #include <esp_matter.h>
+#include "MatterEndpoint.h"
+#include "MatterNode.h"
+#include "MatterRGBLEDDriver.h"
 
 using namespace esp_matter;
 using namespace esp_matter::endpoint;
+using namespace chip::app::Clusters;
 
-class MatterExtendedColorLight {
+class MatterExtendedColorLight : public MatterEndpoint
+{
 
 public:
 
-    MatterExtendedColorLight(node_t* node, void *priv_data);
-
     // Creates and configures a Matter endpoint for the extended color light.
-    // @return Pointer to the created endpoint, or nullptr on failure.
-    endpoint_t*  CreateEndpoint();
+    static std::shared_ptr<MatterExtendedColorLight>  CreateEndpoint(
+        std::shared_ptr<MatterNode> matterNode);
+
+    esp_err_t Initialize() override;
+
+    bool GetOnOff() const;
 
     void SetLightOnOff(bool on);
 
@@ -21,16 +28,25 @@ public:
 
     void SetLightColorHSV(uint8_t hue, uint8_t saturation);
 
+    esp_err_t HandleAttributePreUpdate(uint32_t cluster_id, uint32_t attribute_id,
+                                    esp_matter_attr_val_t* val, void *priv_data) override;
+
 private:
 
-    node_t* m_node;
-    endpoint_t* m_extendedColorLightEndpoint;
-    void* m_priv_data;
+    MatterExtendedColorLight(endpoint_t* endpoint, std::unique_ptr<MatterRGBLEDDriver> matterRGBLEDDriver);
 
-    void AddColorControlFeatures();
+    std::unique_ptr<MatterRGBLEDDriver> m_matterRGBLEDDriver = nullptr;
 
-    void UpdateAttributeValueBool(uint32_t cluster_id, uint32_t attribute_id, bool value);
+    uint8_t GetBrightness() const;
 
-    void UpdateAttributeValueUInt8(uint32_t cluster_id, uint32_t attribute_id, uint8_t value);
+    uint8_t GetHue() const;
+
+    uint8_t GetSaturation() const;
+
+    uint16_t GetTemperature() const;
+
+    ColorControl::ColorMode GetColorMode() const;
+
+    void SetColorMode(ColorControl::ColorMode colorMode);
 
 };

@@ -10,21 +10,24 @@ using namespace chip::app::Clusters;
 
 static const char *TAG = "MatterTemperatureSensor";
 
-MatterTemperatureSensor::MatterTemperatureSensor(node_t* node, TemperatureSensor* temperatureSensor)
+MatterTemperatureSensor::MatterTemperatureSensor(node_t* node, std::shared_ptr<TemperatureSensor> temperatureSensor)
         : MatterSensorBase(node, "MatterTemperatureSensor"), m_temperatureSensor(temperatureSensor)
 {
 }
 
-endpoint_t* MatterTemperatureSensor::CreateEndpoint()
+std::shared_ptr<MatterTemperatureSensor> MatterTemperatureSensor::CreateEndpoint(
+    std::shared_ptr<MatterNode> matterNode,
+    std::shared_ptr<TemperatureSensor> temperatureSensor)
 {
-    ESP_LOGI(TAG, "Creating Endpoint");
-
     // Create Temperature Endpoint
     esp_matter::endpoint::temperature_sensor::config_t temperature_config;
-    m_endpoint = esp_matter::endpoint::temperature_sensor::create(m_node, &temperature_config, ENDPOINT_FLAG_NONE, NULL);
-    ABORT_APP_ON_FAILURE(m_endpoint != nullptr, ESP_LOGE(TAG, "Failed to create temperature sensor endpoint"));
+    endpoint_t* endpoint = esp_matter::endpoint::temperature_sensor::create(matterNode->GetNode(), &temperature_config, ENDPOINT_FLAG_NONE, NULL);
+    ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create temperature sensor endpoint"));
+    
+    auto matterTemperatureSensor = std::shared_ptr<MatterTemperatureSensor>(new MatterTemperatureSensor(endpoint, temperatureSensor));
+    matterNode->AddEndpoint(matterTemperatureSensor);
 
-    return m_endpoint;
+    return matterTemperatureSensor;   
 }
 
 void MatterTemperatureSensor::UpdateMeasurements()

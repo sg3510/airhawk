@@ -21,50 +21,65 @@ const std::unordered_map<AirQualitySensor::MeasurementType, uint32_t> MatterAirQ
     {Sensor::MeasurementType::PM10p0, Pm10ConcentrationMeasurement::Id}
 };
 
-MatterAirQualitySensor::MatterAirQualitySensor(node_t* node, AirQualitySensor* airQualitySensor, MatterExtendedColorLight* lightEndpoint)
-        : MatterSensorBase(node, "MatterAirQualitySensor"), m_airQualitySensor(airQualitySensor), m_lightEndpoint(lightEndpoint)
+MatterAirQualitySensor::MatterAirQualitySensor(endpoint_t* endpoint, std::shared_ptr<AirQualitySensor> airQualitySensor, std::shared_ptr<MatterExtendedColorLight> lightEndpoint)
+        : MatterSensorBase(endpoint, "MatterAirQualitySensor"), m_airQualitySensor(airQualitySensor), m_lightEndpoint(lightEndpoint)
 {
 }
 
-endpoint_t* MatterAirQualitySensor::CreateEndpoint()
+std::shared_ptr<MatterAirQualitySensor> MatterAirQualitySensor::CreateEndpoint(
+    std::shared_ptr<MatterNode> matterNode,
+    std::shared_ptr<AirQualitySensor> airQualitySensor,
+    std::shared_ptr<MatterExtendedColorLight> lightEndpoint)
 {
     // Create Air Quality Endpoint
+    
     esp_matter::endpoint::air_quality_sensor::config_t air_quality_config;
-    m_endpoint = air_quality_sensor::create(m_node, &air_quality_config, ENDPOINT_FLAG_NONE, NULL);
-    ABORT_APP_ON_FAILURE(m_endpoint != nullptr, ESP_LOGE(TAG, "Failed to create air quality sensor endpoint"));
 
-    AddAirQualityClusterFeatures();
+    // Set the feature flags for the Air Quality cluster
+    air_quality_config.air_quality.feature_flags = 
+        cluster::air_quality::feature::fair::get_id() | 
+        cluster::air_quality::feature::moderate::get_id() |
+        cluster::air_quality::feature::very_poor::get_id() |
+        cluster::air_quality::feature::extremely_poor::get_id();
+
+    endpoint_t* endpoint = air_quality_sensor::create(matterNode->GetNode(), &air_quality_config, ENDPOINT_FLAG_NONE, NULL);
+    ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create air quality sensor endpoint"));
+
+    auto matterAirQulitySensor = std::shared_ptr<MatterAirQualitySensor>(new MatterAirQualitySensor(endpoint, airQualitySensor, lightEndpoint));
+    matterNode->AddEndpoint(matterAirQulitySensor);
+    
+    //matterAirQulitySensor->AddAirQualityClusterFeatures();
 
     // Add Concentration Measurement Clusters
-    std::set<AirQualitySensor::MeasurementType> supportedMeasurements = m_airQualitySensor->GetSupportedMeasurements();
+    std::set<AirQualitySensor::MeasurementType> supportedMeasurements = airQualitySensor->GetSupportedMeasurements();
 
     // Add Concentration Measurement Clusters based on supported measurements
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::RelativeHumidity)) {
-        AddRelativeHumidityMeasurementCluster();
+        matterAirQulitySensor->AddRelativeHumidityMeasurementCluster();
     }
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::Temperature)) {
-        AddTemperatureMeasurementCluster();
+        matterAirQulitySensor->AddTemperatureMeasurementCluster();
     }
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::CO2)) {
-        AddCarbonDioxideConcentrationMeasurementCluster();
+        matterAirQulitySensor->AddCarbonDioxideConcentrationMeasurementCluster();
     }
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::PM1p0)) {
-        AddPm1ConcentrationMeasurementCluster();
+        matterAirQulitySensor->AddPm1ConcentrationMeasurementCluster();
     }
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::PM2p5)) {
-        AddPm25ConcentrationMeasurementCluster();
+        matterAirQulitySensor->AddPm25ConcentrationMeasurementCluster();
     }
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::PM10p0)) {
-        AddPm10ConcentrationMeasurementCluster();
+        matterAirQulitySensor->AddPm10ConcentrationMeasurementCluster();
     }
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::NOx)) {
-        AddNitrogenDioxideConcentrationMeasurementCluster();
+        matterAirQulitySensor->AddNitrogenDioxideConcentrationMeasurementCluster();
     }
     if (supportedMeasurements.count(AirQualitySensor::MeasurementType::VOC)) {
-        AddTotalVolatileOrganicCompoundsConcentrationMeasurementCluster();
+        matterAirQulitySensor->AddTotalVolatileOrganicCompoundsConcentrationMeasurementCluster();
     }
 
-    return m_endpoint;
+    return matterAirQulitySensor;
 }
 
 void MatterAirQualitySensor::AddRelativeHumidityMeasurementCluster()

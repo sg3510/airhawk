@@ -21,26 +21,22 @@ class MatterAirQualitySensor : public MatterSensorBase
 {
     public:
 
-        // Constructs a MatterAirQualitySensor instance, linking it to a Matter node, a physical air quality sensor for environmental measurements (e.g., CO2, PM2.5), and a light endpoint for air quality visualization.
-        // @param node The Matter node for attaching the sensor's endpoint.
-        // @param airQualitySensor Pointer to the physical air quality sensor.
-        // @param lightEndpoint Pointer to the MatterExtendedColorLight for visual status indication.
-        MatterAirQualitySensor(node_t* node, AirQualitySensor* airQualitySensor,  MatterExtendedColorLight* lightEndpoint);
-
-        // Creates and configures a Matter endpoint for the air quality sensor, initializing
-        // relevant clusters (e.g., Air Quality, Temperature, Humidity) and their attributes.
-        // @return Pointer to the created endpoint, or nullptr on failure.
-        endpoint_t* CreateEndpoint() override;
+        static std::shared_ptr<MatterAirQualitySensor> CreateEndpoint(
+            std::shared_ptr<MatterNode> matterNode,
+            std::shared_ptr<AirQualitySensor> airQualitySensor,
+            std::shared_ptr<MatterExtendedColorLight> lightEndpoint);
 
         void UpdateMeasurements() override;
 
     private:
 
+        MatterAirQualitySensor(node_t* node, std::shared_ptr<AirQualitySensor> airQualitySensor, std::shared_ptr<MatterExtendedColorLight> lightEndpoint);
+
         // Map from MeasurementType to Matter cluster ID
         static const std::unordered_map<AirQualitySensor::MeasurementType, uint32_t> measurementTypeToClusterId;
 
-      AirQualitySensor* m_airQualitySensor;
-        MatterExtendedColorLight* m_lightEndpoint;
+        std::shared_ptr<AirQualitySensor> m_airQualitySensor;
+        std::shared_ptr<MatterExtendedColorLight> m_lightEndpoint;
         Measurements m_measurements;
 
         void AddRelativeHumidityMeasurementCluster();

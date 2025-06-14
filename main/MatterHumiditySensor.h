@@ -2,6 +2,7 @@
 
 #include <esp_matter.h>
 #include "sensors/RelativeHumiditySensor.h"
+#include "MatterNode.h"
 #include "MatterSensorBase.h"
 
 using namespace esp_matter;
@@ -21,12 +22,11 @@ public:
     // and a physical humidity sensor.
     // @param node The Matter node to which this sensor's endpoint will be attached.
     // @param humiditySensor Pointer to the physical humidity sensor providing measurements.
-    MatterHumiditySensor(node_t* node, RelativeHumiditySensor* humiditySensor);
+    MatterHumiditySensor(endpoint_t* endpoint, std::shared_ptr<RelativeHumiditySensor> humiditySensor);
 
-    // Creates and configures a Matter endpoint for the humidity sensor, initializing
-    // the Relative Humidity Measurement cluster (0x0405) and its attributes.
-    // @return Pointer to the created endpoint, or nullptr on failure.
-    endpoint_t*  CreateEndpoint() override;
+    static std::shared_ptr<MatterHumiditySensor> CreateEndpoint(
+        std::shared_ptr<MatterNode> matterNode,
+        std::shared_ptr<RelativeHumiditySensor> humiditySensor);
 
     // Reads the latest humidity measurement from the physical sensor and updates
     // the Matter Relative Humidity Measurement cluster's MeasuredValue attribute.
@@ -34,7 +34,7 @@ public:
 
 private:
     
-    RelativeHumiditySensor* m_humiditySensor;
+    std::shared_ptr<RelativeHumiditySensor> m_humiditySensor;
     std::optional<float> m_humidityMeasurement;
 
     // Updates the Relative Humidity Measurement cluster's attributes (e.g., MeasuredValue)
