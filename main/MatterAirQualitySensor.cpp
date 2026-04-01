@@ -35,20 +35,13 @@ std::shared_ptr<MatterAirQualitySensor> MatterAirQualitySensor::CreateEndpoint(
     
     esp_matter::endpoint::air_quality_sensor::config_t air_quality_config;
 
-    // Set the feature flags for the Air Quality cluster
-    air_quality_config.air_quality.feature_flags = 
-        cluster::air_quality::feature::fair::get_id() | 
-        cluster::air_quality::feature::moderate::get_id() |
-        cluster::air_quality::feature::very_poor::get_id() |
-        cluster::air_quality::feature::extremely_poor::get_id();
-
     endpoint_t* endpoint = air_quality_sensor::create(matterNode->GetNode(), &air_quality_config, ENDPOINT_FLAG_NONE, NULL);
     ABORT_APP_ON_FAILURE(endpoint != nullptr, ESP_LOGE(TAG, "Failed to create air quality sensor endpoint"));
 
     auto matterAirQulitySensor = std::shared_ptr<MatterAirQualitySensor>(new MatterAirQualitySensor(endpoint, airQualitySensor, lightEndpoint));
     matterNode->AddEndpoint(matterAirQulitySensor);
     
-    //matterAirQulitySensor->AddAirQualityClusterFeatures();
+    matterAirQulitySensor->AddAirQualityClusterFeatures();
 
     // Add Concentration Measurement Clusters
     std::set<AirQualitySensor::MeasurementType> supportedMeasurements = airQualitySensor->GetSupportedMeasurements();
@@ -249,9 +242,6 @@ void MatterAirQualitySensor::AddAirQualityClusterFeatures()
 
     /* Add additional features to the Air Quality cluster */
     cluster::air_quality::feature::fair::add(cluster);
-    cluster::air_quality::feature::moderate::add(cluster);
-    cluster::air_quality::feature::very_poor::add(cluster);
-    cluster::air_quality::feature::extremely_poor::add(cluster);
 }
 
 static uint8_t HueDegreesToUInt8(float degrees)

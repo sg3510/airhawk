@@ -404,8 +404,59 @@ CONFIG_SUPPORT_PM2_5_CONCENTRATION_MEASUREMENT_CLUSTER=y
 CONFIG_SUPPORT_TVOC_CONCENTRATION_MEASUREMENT_CLUSTER=y
 ```
 
-## Copy source files
+## Build and Flash
 
-I have included all the source files in this repo, so just copy the source files files to your project.
+This repo is a self-contained ESP-IDF project. No need to copy files from the light example.
 
-## Build and Flash your project
+### Tested versions
+
+| Component | Version |
+|-----------|---------|
+| ESP-IDF | v5.4.1 |
+| ESP-Matter | release/v1.4 (Matter v1.4) |
+| Target | ESP32-C6 (Thread) |
+
+### Install ESP-IDF and ESP-Matter
+
+```bash
+# Install ESP-IDF v5.4.1
+brew install espressif/eim/eim
+eim install --idf-versions v5.4.1 --target esp32c6
+
+# Clone and install ESP-Matter
+cd ~/.espressif
+git clone --depth 1 --branch release/v1.4 --recursive https://github.com/espressif/esp-matter.git
+cd esp-matter
+source <path-to-esp-idf>/export.sh
+./install.sh
+```
+
+### Build
+
+```bash
+# Source the environments
+export IDF_PATH=~/.espressif/v5.4.1/v5.4.1/esp-idf
+source $IDF_PATH/export.sh
+export ESP_MATTER_PATH=~/.espressif/esp-matter
+source $ESP_MATTER_PATH/export.sh
+
+# Configure for ESP32-C6 with Thread
+idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.c6_thread" set-target esp32c6
+
+# Build
+idf.py build
+```
+
+### Flash
+
+```bash
+idf.py -p /dev/cu.usbserial-* flash monitor
+```
+
+Press `Ctrl+]` to exit the serial monitor.
+
+### Notes
+
+- The project uses a custom partition table (`partitions.csv`) with a 2MB app partition to fit the Matter firmware.
+- WiFi is disabled — this is a Thread-only device. It commissions via BLE and communicates over Thread.
+- You need a Thread Border Router (e.g., Apple HomePod Mini, Apple TV 4K) to commission and use the device.

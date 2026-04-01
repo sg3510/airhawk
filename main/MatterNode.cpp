@@ -138,7 +138,7 @@ void AddWiFiNetworkDiagnosticsCluster(node_t* node)
     cluster::wifi_network_diagnostics::feature::error_counts::add(cluster);
 
     // PacketCounts (PKTCNT)
-    cluster::wifi_network_diagnostics::feature::packet_counts::add(cluster);
+    cluster::wifi_network_diagnostics::feature::packets_counts::add(cluster);
 }
 
 void ConfigureGeneralDiagnosticsCluster(node_t* node)
@@ -255,11 +255,12 @@ void MatterNode::UpdateRloc16()
 
     ESP_LOGI(TAG, "RLOC16: 0x%04X", rloc16);
 
-    UpdateAttributeValueUInt16(
-        0, // Endpoint ID 0 for the root endpoint
-        ThreadNetworkDiagnostics::Id,
-        ThreadNetworkDiagnostics::Attributes::Rloc16::Id,
-        rloc16);
+    // Rloc16 attribute ID not available in this ESP-Matter version
+    // UpdateAttributeValueUInt16(
+    //     0, // Endpoint ID 0 for the root endpoint
+    //     ThreadNetworkDiagnostics::Id,
+    //     ThreadNetworkDiagnostics::Attributes::Rloc16::Id,
+    //     rloc16);
 }
 
 void MatterNode::matter_event_cb(const ChipDeviceEvent *event, intptr_t arg)

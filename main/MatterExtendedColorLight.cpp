@@ -23,20 +23,9 @@ std::shared_ptr<MatterExtendedColorLight> MatterExtendedColorLight::CreateEndpoi
     }
 
     extended_color_light::config_t light_config;
-    light_config.on_off.features.lighting.start_up_on_off = nullptr;
-    light_config.level_control.features.lighting.start_up_current_level = nullptr;
     light_config.color_control.color_mode = (uint8_t)ColorControl::ColorMode::kCurrentHueAndCurrentSaturation;
     light_config.color_control.enhanced_color_mode = (uint8_t)ColorControl::ColorMode::kCurrentHueAndCurrentSaturation;
     
-
-    // Set the feature flags for the On Off cluster
-    light_config.on_off.feature_flags = cluster::on_off::feature::lighting::get_id();
-
-    // Set the feature flags for the Level Control cluster
-    light_config.level_control.feature_flags = cluster::level_control::feature::lighting::get_id();
-
-    // Set the feature flags for the Color Control cluster
-    light_config.color_control.feature_flags = cluster::color_control::feature::hue_saturation::get_id();
 
     // Create Extended Color Light Endpoint
     ESP_LOGI(TAG, "Creating extended color light endpoint");
