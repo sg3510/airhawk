@@ -100,8 +100,9 @@ int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint8_t count)
         dev_handle = sensirion_i2c_hal_add_device(address);
 
     esp_err_t status = i2c_master_receive(dev_handle, data, count, -1);
-    ESP_ERROR_CHECK(status);
-
+    if (status != ESP_OK) {
+        ESP_LOGE(TAG, "I2C read failed: 0x%x", status);
+    }
     return status;
 }
 
@@ -122,8 +123,9 @@ int8_t sensirion_i2c_hal_write(uint8_t address, const uint8_t* data, uint8_t cou
         dev_handle = sensirion_i2c_hal_add_device(address);
 
     esp_err_t status = i2c_master_transmit(dev_handle, data, count, -1);
-    ESP_ERROR_CHECK(status);
-
+    if (status != ESP_OK) {
+        ESP_LOGE(TAG, "I2C write failed: 0x%x", status);
+    }
     return status;
 }
 

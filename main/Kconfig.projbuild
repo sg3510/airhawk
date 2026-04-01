@@ -1,4 +1,4 @@
-menu "SEN66 I2C Configuration"
+menu "SEN66 Configuration"
 
     config SEN66_I2C_SDA_PIN
         int "I2C SDA Pin"
@@ -11,5 +11,11 @@ menu "SEN66 I2C Configuration"
         default 7
         help
             GPIO number for I2C master clock
+
+    config SEN66_POLL_INTERVAL_MS
+        int "Sensor polling interval (ms)"
+        default 5000
+        help
+            How often to read measurements from the SEN66 sensor
 
 endmenu
